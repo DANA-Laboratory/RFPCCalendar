@@ -1,0 +1,42 @@
+.event-box  {
+    -fx-border-width: 1;
+    -fx-border-radius: 2;
+    -fx-alignment: center-left;
+    -fx-font-family: tahoma;
+    -fx-font-size: 12;
+    -fx-font-weight: regular;
+}
+.event-box:hover  {
+    -fx-background-color: lightsteelblue;
+    -fx-alignment: top-left;
+    -fx-font-size: 12;
+}
+.event-box:pressed  {
+    -fx-background-color: steelblue;
+}
+.event-box:focused  {
+    -fx-border-width: 3;
+    -fx-font-weight: bold;
+}
+.event-next {
+    -fx-border-color: lightsalmon;
+    -fx-text-fill: black;
+}
+.event-now {
+    -fx-border-color: orangered;
+    -fx-text-fill:  black;
+}
+.event-previous {
+    -fx-border-color: orange;
+    -fx-text-fill: black;
+}
+.date_cell_big {
+    -fx-alignment: top-left;
+    -fx-pref-height: 60;
+    -fx-pref-width: 70;
+}
+.week_number_cell_big {
+    -fx-pref-height: 60;
+    -fx-pref-width: 60;
+    -fx-font-size: 14;
+}
