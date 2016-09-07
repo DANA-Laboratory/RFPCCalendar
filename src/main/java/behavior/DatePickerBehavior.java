@@ -23,20 +23,22 @@
  *
  */
 
-package com.sun.javafx.scene.control.behavior;
+package behavior;
 
-import javafx.scene.control.DatePicker;
-import java.time.LocalDate;
+import control.DatePicker;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
-import com.sun.javafx.scene.control.skin.DatePickerSkin;
+import skin.DatePickerSkin;
 import static javafx.scene.input.KeyCode.DOWN;
 import static javafx.scene.input.KeyCode.F4;
 import static javafx.scene.input.KeyCode.UP;
 import static javafx.scene.input.KeyEvent.KEY_RELEASED;
+import com.sun.javafx.scene.control.behavior.ComboBoxBaseBehavior;
+import com.sun.javafx.scene.control.behavior.KeyBinding;
 
 
-public class DatePickerBehavior extends ComboBoxBaseBehavior<LocalDate> {
+public class DatePickerBehavior extends ComboBoxBaseBehavior<Date> {
 
     /***************************************************************************
      *                                                                         *

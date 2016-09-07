@@ -23,19 +23,14 @@
  *
  */
 
-package javafx.scene.control;
+package control;
 
 // editor and converter code in sync with ComboBox 4858:e60e9a5396e6
 
-import java.time.LocalDate;
-import java.time.DateTimeException;
-import java.time.chrono.Chronology;
-import java.time.chrono.IsoChronology;
-import java.time.format.FormatStyle;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
@@ -53,12 +48,15 @@ import javafx.scene.AccessibleAttribute;
 import javafx.scene.AccessibleRole;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-import javafx.util.converter.LocalDateStringConverter;
+import converter.LocalDateStringConverter;
 
 import com.sun.javafx.css.converters.BooleanConverter;
-import com.sun.javafx.scene.control.skin.DatePickerSkin;
-import com.sun.javafx.scene.control.skin.resources.ControlResources;
+import skin.DatePickerSkin;
 
+import javafx.scene.control.ComboBoxBase;
+import javafx.scene.control.Control;
+import javafx.scene.control.Skin;
+import javafx.scene.control.TextField;
 
 /**
  * The DatePicker control allows the user to enter a date as text or
@@ -68,8 +66,8 @@ import com.sun.javafx.scene.control.skin.resources.ControlResources;
  *
  * <p>The {@link #valueProperty() value} property represents the
  * currently selected {@link java.time.LocalDate}.  An initial date can
- * be set via the {@link #DatePicker(java.time.LocalDate) constructor}
- * or by calling {@link #setValue(java.time.LocalDate) setValue()}.  The
+ * be set via the {@link #DatePicker(java.util.Date) constructor}
+ * or by calling {@link #setValue(java.util.Date) setValue()}.  The
  * default value is null.
  *
  * <pre><code>
@@ -82,30 +80,10 @@ import com.sun.javafx.scene.control.skin.resources.ControlResources;
  * });
  * </code></pre>
  *
- * The {@link #chronologyProperty() chronology} property specifies a
- * calendar system to be used for parsing, displaying, and choosing
- * dates.
- * The {@link #valueProperty() value} property is always defined in
- * the ISO calendar system, however, so applications based on a
- * different chronology may use the conversion methods provided in the
- * {@link java.time.chrono.Chronology} API to get or set the
- * corresponding {@link java.time.chrono.ChronoLocalDate} value. For
- * example:
- *
- * <pre><code>
- * LocalDate isoDate = datePicker.getValue();
- * ChronoLocalDate chronoDate =
- *     ((isoDate != null) ? datePicker.getChronology().date(isoDate) : null);
- * System.err.println("Selected date: " + chronoDate);
- * </code></pre>
- *
- *
- * @since JavaFX 8.0
  */
-public class DatePicker extends ComboBoxBase<LocalDate> {
+public class DatePicker extends ComboBoxBase<Date> {
 
-    private LocalDate lastValidDate = null;
-    private Chronology lastValidChronology = IsoChronology.INSTANCE;
+    private Date lastValidDate = null;
 
     /**
      * Creates a default DatePicker instance with a <code>null</code> date value set.
@@ -114,10 +92,9 @@ public class DatePicker extends ComboBoxBase<LocalDate> {
         this(null);
 
         valueProperty().addListener(observable -> {
-            LocalDate date = getValue();
-            Chronology chrono = getChronology();
+            Date date = getValue();
 
-            if (validateDate(chrono, date)) {
+            if (validateDate(date)) {
                 lastValidDate = date;
             } else {
                 System.err.println("Restoring value to " +
@@ -126,30 +103,10 @@ public class DatePicker extends ComboBoxBase<LocalDate> {
             }
         });
 
-        chronologyProperty().addListener(observable -> {
-            LocalDate date = getValue();
-            Chronology chrono = getChronology();
-
-            if (validateDate(chrono, date)) {
-                lastValidChronology = chrono;
-                defaultConverter = new LocalDateStringConverter(FormatStyle.SHORT, null, chrono);
-            } else {
-                System.err.println("Restoring value to " + lastValidChronology);
-                setChronology(lastValidChronology);
-            }
-        });
     }
 
-    private boolean validateDate(Chronology chrono, LocalDate date) {
-        try {
-            if (date != null) {
-                chrono.date(date);
-            }
-            return true;
-        } catch (DateTimeException ex) {
-            System.err.println(ex);
-            return false;
-        }
+    private boolean validateDate(Date date) {
+        return true; //TODO any validation
     }
 
     /**
@@ -158,7 +115,7 @@ public class DatePicker extends ComboBoxBase<LocalDate> {
      *
      * @param localDate to be set as the currently selected date in the DatePicker. Can be null.
      */
-    public DatePicker(LocalDate localDate) {
+    public DatePicker(Date localDate) {
         setValue(localDate);
         getStyleClass().add(DEFAULT_STYLE_CLASS);
         setAccessibleRole(AccessibleRole.DATE_PICKER);
@@ -175,8 +132,8 @@ public class DatePicker extends ComboBoxBase<LocalDate> {
 
     /**
      * A custom cell factory can be provided to customize individual
-     * day cells in the DatePicker popup. Refer to {@link DateCell}
-     * and {@link Cell} for more information on cell factories.
+     * day cells in the DatePicker popup. Refer to {@link javafx.scene.control.DateCell}
+     * and {@link javafx.scene.control.Cell} for more information on cell factories.
      * Example:
      *
      * <pre><code>
@@ -232,30 +189,6 @@ public class DatePicker extends ComboBoxBase<LocalDate> {
      * Setting the value to <code>null</code> will restore the default
      * chronology.
      */
-    public final ObjectProperty<Chronology> chronologyProperty() {
-        return chronology;
-    }
-    private ObjectProperty<Chronology> chronology =
-        new SimpleObjectProperty<Chronology>(this, "chronology", null);
-    public final Chronology getChronology() {
-        Chronology chrono = chronology.get();
-        if (chrono == null) {
-            try {
-                chrono = Chronology.ofLocale(Locale.getDefault(Locale.Category.FORMAT));
-            } catch (Exception ex) {
-                System.err.println(ex);
-            }
-            if (chrono == null) {
-                chrono = IsoChronology.INSTANCE;
-            }
-            //System.err.println(chrono);
-        }
-        return chrono;
-    }
-    public final void setChronology(Chronology value) {
-        chronology.setValue(value);
-    }
-
 
     /**
      * Whether the DatePicker popup should display a column showing
@@ -266,10 +199,7 @@ public class DatePicker extends ComboBoxBase<LocalDate> {
      */
     public final BooleanProperty showWeekNumbersProperty() {
         if (showWeekNumbers == null) {
-            String country = Locale.getDefault(Locale.Category.FORMAT).getCountry();
-            boolean localizedDefault =
-                (!country.isEmpty() &&
-                 ControlResources.getNonTranslatableString("DatePicker.showWeekNumbers").contains(country));
+            boolean localizedDefault = true;
             showWeekNumbers = new StyleableBooleanProperty(localizedDefault) {
                 @Override public CssMetaData<DatePicker,Boolean> getCssMetaData() {
                     return StyleableProperties.SHOW_WEEK_NUMBERS;
@@ -293,105 +223,12 @@ public class DatePicker extends ComboBoxBase<LocalDate> {
     public final boolean isShowWeekNumbers() {
         return showWeekNumbersProperty().getValue();
     }
-
-
-    // --- string converter
-    /**
-     * Converts the input text to an object of type LocalDate and vice
-     * versa.
-     *
-     * <p>If not set by the application, the DatePicker skin class will
-     * set a converter based on a {@link java.time.format.DateTimeFormatter}
-     * for the current {@link java.util.Locale} and
-     * {@link #chronologyProperty() chronology}. This formatter is
-     * then used to parse and display the current date value.
-     *
-     * Setting the value to <code>null</code> will restore the default
-     * converter.
-     *
-     * <p>Example using an explicit formatter:
-     * <pre><code>
-     * datePicker.setConverter(new StringConverter&lt;LocalDate&gt;() {
-     *     String pattern = "yyyy-MM-dd";
-     *     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(pattern);
-     *
-     *     {
-     *         datePicker.setPromptText(pattern.toLowerCase());
-     *     }
-     *
-     *     &#064;Override public String toString(LocalDate date) {
-     *         if (date != null) {
-     *             return dateFormatter.format(date);
-     *         } else {
-     *             return "";
-     *         }
-     *     }
-     *
-     *     &#064;Override public LocalDate fromString(String string) {
-     *         if (string != null && !string.isEmpty()) {
-     *             return LocalDate.parse(string, dateFormatter);
-     *         } else {
-     *             return null;
-     *         }
-     *     }
-     * });
-     * </code></pre>
-     * <p>Example that wraps the default formatter and catches parse exceptions:
-     * <pre><code>
-     *   final StringConverter&lt;LocalDate&gt; defaultConverter = datePicker.getConverter();
-     *   datePicker.setConverter(new StringConverter&lt;LocalDate&gt;() {
-     *       &#064;Override public String toString(LocalDate value) {
-     *           return defaultConverter.toString(value);
-     *       }
-     *
-     *       &#064;Override public LocalDate fromString(String text) {
-     *           try {
-     *               return defaultConverter.fromString(text);
-     *           } catch (DateTimeParseException ex) {
-     *               System.err.println("HelloDatePicker: "+ex.getMessage());
-     *               throw ex;
-     *           }
-     *       }
-     *   });
-     * </code></pre>
-     *
-     * <p>The default base year for parsing input containing only two digits for
-     * the year is 2000 (see {@link java.time.format.DateTimeFormatter}).  This
-     * default is not useful for allowing a person's date of birth to be typed.
-     * The following example modifies the converter's fromString() method to
-     * allow a two digit year for birth dates up to 99 years in the past.
-     * <pre><code>
-     *   &#064;Override public LocalDate fromString(String text) {
-     *       if (text != null && !text.isEmpty()) {
-     *           Locale locale = Locale.getDefault(Locale.Category.FORMAT);
-     *           Chronology chrono = datePicker.getChronology();
-     *           String pattern =
-     *               DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT,
-     *                                                                    null, chrono, locale);
-     *           String prePattern = pattern.substring(0, pattern.indexOf("y"));
-     *           String postPattern = pattern.substring(pattern.lastIndexOf("y")+1);
-     *           int baseYear = LocalDate.now().getYear() - 99;
-     *           DateTimeFormatter df = new DateTimeFormatterBuilder()
-     *                       .parseLenient()
-     *                       .appendPattern(prePattern)
-     *                       .appendValueReduced(ChronoField.YEAR, 2, 2, baseYear)
-     *                       .appendPattern(postPattern)
-     *                       .toFormatter();
-     *           return LocalDate.from(chrono.date(df.parse(text)));
-     *       } else {
-     *           return null;
-     *       }
-     *   }
-     * </code></pre>
-     *
-     * @see javafx.scene.control.ComboBox#converterProperty
-     */
-    public final ObjectProperty<StringConverter<LocalDate>> converterProperty() { return converter; }
-    private ObjectProperty<StringConverter<LocalDate>> converter =
-            new SimpleObjectProperty<StringConverter<LocalDate>>(this, "converter", null);
-    public final void setConverter(StringConverter<LocalDate> value) { converterProperty().set(value); }
-    public final StringConverter<LocalDate> getConverter() {
-        StringConverter<LocalDate> converter = converterProperty().get();
+    public final ObjectProperty<StringConverter<Date>> converterProperty() { return converter; }
+    private ObjectProperty<StringConverter<Date>> converter =
+            new SimpleObjectProperty<StringConverter<Date>>(this, "converter", null);
+    public final void setConverter(StringConverter<Date> value) { converterProperty().set(value); }
+    public final StringConverter<Date> getConverter() {
+        StringConverter<Date> converter = converterProperty().get();
         if (converter != null) {
             return converter;
         } else {
@@ -400,8 +237,8 @@ public class DatePicker extends ComboBoxBase<LocalDate> {
     }
 
     // Create a symmetric (format/parse) converter with the default locale.
-    private StringConverter<LocalDate> defaultConverter =
-                new LocalDateStringConverter(FormatStyle.SHORT, null, getChronology());
+    private StringConverter<Date> defaultConverter =
+            new LocalDateStringConverter();
 
 
     // --- Editor
@@ -439,14 +276,10 @@ public class DatePicker extends ComboBoxBase<LocalDate> {
      /**
       * @treatAsPrivate implementation detail
       */
-    private static class StyleableProperties {
-        private static final String country =
-            Locale.getDefault(Locale.Category.FORMAT).getCountry();
-        private static final CssMetaData<DatePicker, Boolean> SHOW_WEEK_NUMBERS =
+    protected static class StyleableProperties {
+        protected static final CssMetaData<DatePicker, Boolean> SHOW_WEEK_NUMBERS =
               new CssMetaData<DatePicker, Boolean>("-fx-show-week-numbers",
-                   BooleanConverter.getInstance(),
-                   (!country.isEmpty() &&
-                    ControlResources.getNonTranslatableString("DatePicker.showWeekNumbers").contains(country))) {
+                   BooleanConverter.getInstance(), true) {
             @Override public boolean isSettable(DatePicker n) {
                 return n.showWeekNumbers == null || !n.showWeekNumbers.isBound();
             }
@@ -455,9 +288,7 @@ public class DatePicker extends ComboBoxBase<LocalDate> {
                 return (StyleableProperty<Boolean>)(WritableValue<Boolean>)n.showWeekNumbersProperty();
             }
         };
-
         private static final List<CssMetaData<? extends Styleable, ?>> STYLEABLES;
-
         static {
             final List<CssMetaData<? extends Styleable, ?>> styleables =
                 new ArrayList<CssMetaData<? extends Styleable, ?>>(Control.getClassCssMetaData());
@@ -498,8 +329,8 @@ public class DatePicker extends ComboBoxBase<LocalDate> {
                 String accText = getAccessibleText();
                 if (accText != null && !accText.isEmpty()) return accText;
 
-                LocalDate date = getValue();
-                StringConverter<LocalDate> c = getConverter();
+                Date date = getValue();
+                StringConverter<Date> c = getConverter();
                 if (date != null && c != null) {
                     return c.toString(date);
                 }

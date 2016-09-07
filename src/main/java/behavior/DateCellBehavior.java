@@ -23,14 +23,17 @@
  *
  */
 
-package com.sun.javafx.scene.control.behavior;
+package behavior;
 
+import com.ibm.icu.util.Calendar;
+import com.sun.javafx.scene.control.behavior.BehaviorBase;
+import com.sun.javafx.scene.control.behavior.KeyBinding;
 import javafx.geometry.NodeOrientation;
 import javafx.scene.Node;
-import javafx.scene.control.DateCell;
+import control.DateCell;
 import java.util.ArrayList;
 import java.util.List;
-import com.sun.javafx.scene.control.skin.DatePickerContent;
+import skin.DatePickerContent;
 import com.sun.javafx.scene.traversal.Direction;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.WEEKS;
@@ -94,10 +97,10 @@ public class DateCellBehavior extends BehaviorBase<DateCell> {
                   if (dpc != null) {
                       DateCell cell = (DateCell)node;
                       switch (dir) {
-                        case UP:    dpc.goToDayCell(cell, -1, WEEKS, true); break;
-                        case DOWN:  dpc.goToDayCell(cell, +1, WEEKS, true); break;
-                        case LEFT:  dpc.goToDayCell(cell, rtl ? +1 : -1, DAYS,  true); break;
-                        case RIGHT: dpc.goToDayCell(cell, rtl ? -1 : +1, DAYS,  true); break;
+                        case UP:    dpc.goToDayCell(cell, -1, Calendar.WEEK_OF_MONTH, true); break;
+                        case DOWN:  dpc.goToDayCell(cell, +1, Calendar.WEEK_OF_MONTH, true); break;
+                        case LEFT:  dpc.goToDayCell(cell, rtl ? +1 : -1, Calendar.DAY_OF_MONTH,  true); break;
+                        case RIGHT: dpc.goToDayCell(cell, rtl ? -1 : +1, Calendar.DAY_OF_MONTH,  true); break;
                       }
                       return;
                   }

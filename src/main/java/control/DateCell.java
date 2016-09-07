@@ -23,11 +23,13 @@
  *
  */
 
-package javafx.scene.control;
+package control;
 
-import java.time.LocalDate;
+import java.util.Date;
 
-import com.sun.javafx.scene.control.skin.DateCellSkin;
+import skin.DateCellSkin;
+import javafx.scene.control.Cell;
+import javafx.scene.control.Skin;
 
 /**
  * DateCell is used by {@link DatePicker} to render the individual
@@ -38,13 +40,13 @@ import com.sun.javafx.scene.control.skin.DateCellSkin;
  *
  * @since JavaFX 8.0
  */
-public class DateCell extends Cell<LocalDate> {
+public class DateCell extends Cell<Date> {
     public DateCell() {
         getStyleClass().add(DEFAULT_STYLE_CLASS);
     }
 
     /** {@inheritDoc} */
-    @Override public void updateItem(LocalDate item, boolean empty) {
+    @Override public void updateItem(Date item, boolean empty) {
         super.updateItem(item, empty);
     }
 
@@ -59,5 +61,5 @@ public class DateCell extends Cell<LocalDate> {
      *                                                                         *
      **************************************************************************/
 
-    private static final String DEFAULT_STYLE_CLASS = "date-cell";
+    protected static final String DEFAULT_STYLE_CLASS = "date-cell";
 }

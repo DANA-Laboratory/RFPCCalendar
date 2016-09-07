@@ -23,14 +23,11 @@
  *
  */
 
-package com.sun.javafx.scene.control.skin;
+package skin;
 
 // Note: The TextField code is in sync with ComboBoxListViewSkin 4945:f3dcad659452
 
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.chrono.HijrahChronology;
-import java.time.format.DateTimeParseException;
+import java.util.Date;
 
 import com.sun.javafx.scene.input.ExtendedInputMethodRequests;
 import com.sun.javafx.scene.traversal.Algorithm;
@@ -44,18 +41,22 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import javafx.scene.control.DatePicker;
+import control.DatePicker;
 import javafx.scene.control.TextField;
 import javafx.scene.input.*;
 import javafx.util.StringConverter;
 
-import com.sun.javafx.scene.control.behavior.DatePickerBehavior;
+import behavior.DatePickerBehavior;
 
-public class DatePickerSkin extends ComboBoxPopupControl<LocalDate> {
+import java.time.format.DateTimeParseException;
+import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
+import com.sun.javafx.scene.control.skin.ComboBoxPopupControl;
 
-    private DatePicker datePicker;
+public class DatePickerSkin extends ComboBoxPopupControl<Date> {
+
+    protected DatePicker datePicker;
     private TextField displayNode;
-    private DatePickerContent datePickerContent;
+    protected DatePickerContent datePickerContent;
     private TextField textField;
 
     public DatePickerSkin(final DatePicker datePicker) {
@@ -97,7 +98,7 @@ public class DatePickerSkin extends ComboBoxPopupControl<LocalDate> {
             //if (datePicker.isEditable()) {
                 // Fix for the regression noted in a comment in RT-29885.
                 ((ComboBoxListViewSkin.FakeFocusTextField)textField).setFakeFocus(hasFocus);
-            //}
+                //}
         });
 
         datePicker.addEventFilter(KeyEvent.ANY, ke -> {
@@ -214,7 +215,6 @@ public class DatePickerSkin extends ComboBoxPopupControl<LocalDate> {
             }
         }));
 
-        registerChangeListener(datePicker.chronologyProperty(), "CHRONOLOGY");
         registerChangeListener(datePicker.converterProperty(), "CONVERTER");
         registerChangeListener(datePicker.dayCellFactoryProperty(), "DAY_CELL_FACTORY");
         registerChangeListener(datePicker.showWeekNumbersProperty(), "SHOW_WEEK_NUMBERS");
@@ -223,13 +223,8 @@ public class DatePickerSkin extends ComboBoxPopupControl<LocalDate> {
 
     @Override public Node getPopupContent() {
         if (datePickerContent == null) {
-            if (datePicker.getChronology() instanceof HijrahChronology) {
-                datePickerContent = new DatePickerHijrahContent(datePicker);
-            } else {
-                datePickerContent = new DatePickerContent(datePicker);
-            }
+            datePickerContent = new DatePickerContent(datePicker);
         }
-
         return datePickerContent;
     }
 
@@ -250,7 +245,6 @@ public class DatePickerSkin extends ComboBoxPopupControl<LocalDate> {
     }
 
     @Override protected void handleControlPropertyChanged(String p) {
-
         if ("CHRONOLOGY".equals(p) ||
             "DAY_CELL_FACTORY".equals(p)) {
 
@@ -267,8 +261,8 @@ public class DatePickerSkin extends ComboBoxPopupControl<LocalDate> {
         } else if ("SHOWING".equals(p)) {
             if (datePicker.isShowing()) {
                 if (datePickerContent != null) {
-                    LocalDate date = datePicker.getValue();
-                    datePickerContent.displayedYearMonthProperty().set((date != null) ? YearMonth.from(date) : YearMonth.now());
+                    Date date = datePicker.getValue();
+                    datePickerContent.displayedYearMonthProperty().set((date != null) ? new YearMonth(date) : YearMonth.now());
                     datePickerContent.updateValues();
                 }
                 show();
@@ -283,8 +277,8 @@ public class DatePickerSkin extends ComboBoxPopupControl<LocalDate> {
         } else if ("VALUE".equals(p)) {
             updateDisplayNode();
             if (datePickerContent != null) {
-                LocalDate date = datePicker.getValue();
-                datePickerContent.displayedYearMonthProperty().set((date != null) ? YearMonth.from(date) : YearMonth.now());
+                Date date = datePicker.getValue();
+                datePickerContent.displayedYearMonthProperty().set((date != null) ? new YearMonth(date) : YearMonth.now());
                 datePickerContent.updateValues();
             }
             datePicker.fireEvent(new ActionEvent());
@@ -359,8 +353,8 @@ public class DatePickerSkin extends ComboBoxPopupControl<LocalDate> {
 
     private void updateDisplayNode() {
         if (displayNode != null) {
-            LocalDate date = datePicker.getValue();
-            StringConverter<LocalDate> c = datePicker.getConverter();
+            Date date = datePicker.getValue();
+            StringConverter<Date> c = datePicker.getConverter();
 
             if (date != null && c != null) {
                 displayNode.setText(c.toString(date));
@@ -371,10 +365,10 @@ public class DatePickerSkin extends ComboBoxPopupControl<LocalDate> {
     }
 
     private void setTextFromTextFieldIntoComboBoxValue() {
-        StringConverter<LocalDate> c = datePicker.getConverter();
+        StringConverter<Date> c = datePicker.getConverter();
         if (c != null) {
-            LocalDate oldValue = datePicker.getValue();
-            LocalDate value = oldValue;
+            Date oldValue = datePicker.getValue();
+            Date value = oldValue;
             String text = textField.getText();
 
             if (text == null || text.isEmpty()) {

@@ -23,17 +23,18 @@
  *
  */
 
-package com.sun.javafx.scene.control.skin;
+package skin;
 
-import javafx.scene.control.DateCell;
+import com.sun.javafx.scene.control.skin.CellSkinBase;
+import control.DateCell;
 import javafx.scene.text.Text;
 
-import com.sun.javafx.scene.control.behavior.DateCellBehavior;
+import behavior.DateCellBehaviorExt;
 
-public class DateCellSkin extends CellSkinBase<DateCell, DateCellBehavior> {
-
+public class DateCellSkin extends CellSkinBase<DateCell, DateCellBehaviorExt> {
+    static final double DEFAULT_CELL_SIZE = 24.0;
     public DateCellSkin(DateCell control) {
-        super(control, new DateCellBehavior(control));
+        super(control, new DateCellBehaviorExt(control));
 
         control.setMaxWidth(Double.MAX_VALUE); // make the cell grow to fill a GridPane's cell
     }
