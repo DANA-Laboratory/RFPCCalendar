@@ -7,7 +7,8 @@ import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
-import main.MasterPane;
+import main.Main;
+import main.MainController;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -106,7 +107,7 @@ public class ServerIO {
                             return;
                         }
                         if(query.equals(Query.FindTypes.toString())) {
-                            String nav[] = MasterPane.getNavigation();
+                            String nav[] = MainController.getNavigation();
                             JSONArray types = new JSONArray();
                             types.put(getRandom(nav));
                             String str;

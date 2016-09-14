@@ -1,4 +1,4 @@
-package view;
+package panes;
 
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
@@ -6,9 +6,9 @@ import javafx.scene.layout.AnchorPane;
 /**
  * Created by AliReza on 9/11/2016.
  */
-public class Latest extends AnchorPane {
+public class BottomLatest extends AnchorPane {
     private ListView history = new ListView();
-    public Latest(){
+    public BottomLatest(){
         super();
         AnchorPane.setBottomAnchor(history ,0.0);
         AnchorPane.setTopAnchor(history ,0.0);

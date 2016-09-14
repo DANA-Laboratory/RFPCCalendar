@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 
 <?import control.DatePickerExt?>
-<GridPane nodeOrientation="RIGHT_TO_LEFT" alignment="center" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.Controller">
+<GridPane nodeOrientation="RIGHT_TO_LEFT" alignment="center" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.CalendarController">
    <columnConstraints>
       <ColumnConstraints />
    </columnConstraints>

@@ -6,13 +6,12 @@ import org.junit.Test;
 import org.testfx.framework.junit.ApplicationTest;
 
 import static control.ServerIO.startComboIDServer;
-import static org.junit.Assert.*;
 
 /**
  * Created by Afzalan on 9/11/2016.
  */
 public class MasterPaneTest extends ApplicationTest {
-    private Application MasterPane = new MasterPane();
+    private Application MasterPane = new Main();
     @Test
     public void testCreateAncorPane() throws Exception {
         Thread.sleep(20000);
