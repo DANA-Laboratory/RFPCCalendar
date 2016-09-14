@@ -1,7 +1,6 @@
 package skin;
+import Net.Socket;
 import control.EventCell;
-import io.socket.client.IO;
-import io.socket.client.Socket;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.Event;
@@ -20,13 +19,12 @@ import java.util.List;
  * Created by AliReza on 9/1/2016.
  */
 public class DatePickerEventsPane extends Pane {
-    static Socket socket = null;
-    static final int PORT = 9291;
     private JSONArray calendarEvents;
-    private boolean showEvents = true;
     public ObjectProperty<Date> lastUpdateProperty = new SimpleObjectProperty<Date>();
+    public ObjectProperty<Boolean> showEventsProperty = new SimpleObjectProperty<Boolean>();
     public DatePickerEventsPane() {
         super();
+        showEventsProperty.setValue(true);
         try {
             socketConnect();
         } catch (URISyntaxException | InterruptedException e) {
@@ -39,17 +37,17 @@ public class DatePickerEventsPane extends Pane {
                         getChildren().forEach(n->{if(n instanceof DatePickerContentExt) n.requestFocus(); return;});
                         break;
                     case F10:
-                        showEvents = !showEvents;
-                        getChildren().forEach(n->{if(n instanceof EventCell) n.setVisible(showEvents);});
-                        if(showEvents)
-                            getChildren().forEach(n->{if(n instanceof EventCell) n.requestFocus(); return;});
+                        showEventsProperty.setValue(!showEventsProperty.get());
+                        getChildren().forEach(n->{if(n instanceof EventCell) n.setVisible(showEventsProperty.get());});
                         break;
+                    case DELETE:
+                        //TODO emit delete
                 }
             }
         });
     }
     public void addEvents(List<Node> eventNodes){
-        eventNodes.forEach((en) -> {en.setVisible(showEvents); getChildren().add(en);});
+        eventNodes.forEach((en) -> {en.setVisible(showEventsProperty.get()); getChildren().add(en);});
     }
     public JSONArray getCalendarEvents(){
         return calendarEvents;
@@ -58,12 +56,11 @@ public class DatePickerEventsPane extends Pane {
         eventNodes.forEach((tf) -> getChildren().remove(tf));
     }
     private void socketConnect() throws URISyntaxException, InterruptedException {
-        socket = IO.socket("http://localhost:" + PORT);
-        socket.on(Socket.EVENT_CONNECT, objects -> {
+        Socket.get().on(io.socket.client.Socket.EVENT_CONNECT, objects -> {
             System.out.println("I`m connected and send request for events");
-            socket.emit("requestEvents");
+            Socket.get().emit("requestEvents");
         });
-        socket.on("calendarEvent", args -> {
+        Socket.get().on("calendarEvent", args -> {
             if (args.length > 0) {
                 try {
                     if (calendarEvents == null)
@@ -81,13 +78,13 @@ public class DatePickerEventsPane extends Pane {
                 }
             }
         });
-        socket.connect();
+        Socket.get().connect();
     }
     public static void close() {
-        if (socket != null) {
-            if (socket.connected())
-                socket.disconnect();
-            socket.close();
+        if (Socket.get() != null) {
+            if (Socket.get().connected())
+                Socket.get().disconnect();
+            Socket.get().close();
         }
     }
 }

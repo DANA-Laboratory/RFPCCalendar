@@ -30,20 +30,20 @@ public class DatePickerTest extends GuiTest {
     private DatePicker dp;
     private Parent root;
     private DatePickerSkinExt datePickerSkinExt;
-    static SocketIOServer server;
-    static final int PORT = 9291;
-    static SocketIOClient socketIOClient = null;
+
     static String eventData = "[{"
             + "caption : 'جاوا مقدماتی'"
             + ",location : 'بندر امام'"
             + ",trainer : 'محمود اکبری'"
             + ",from : '950531'"
             + ",to : '950605'"
+            + ",code : '95/1'"
             + "} , {caption : 'اکسس پیشرفته'"
             + ",location : 'بندر امام'"
             + ",trainer : 'محمود اکبری'"
             + ",from : '950615'"
             + ",to : '950616'"
+            + ",code : '95/2'"
             + "}]";
     static String eventData2 = "[{"
             + "caption : 'محاسبات با C++'"
@@ -51,73 +51,37 @@ public class DatePickerTest extends GuiTest {
             + ",trainer : 'محمود اکبری'"
             + ",from : '950528'"
             + ",to : '950529'"
+            + ",code : '95/3'"
             + "} , {caption : 'مبانی HSE'"
             + ",trainer : 'محمود اکبری'"
             + ",location : 'بندر امام'"
             + ",from : '950708'"
             + ",to : '950709'"
+            + ",code : '95/4'"
             + "}]";
-    public static void server() throws InterruptedException, UnsupportedEncodingException {
-        Configuration config = new Configuration();
-        config.setHostname("127.0.0.1");
-        config.setPort(PORT);
-        server = new SocketIOServer(config);
-        server.addConnectListener(new ConnectListener() {
-            @Override
-            public void onConnect(SocketIOClient _socketIOClient) {
-                if (socketIOClient == null) {
-                    socketIOClient = _socketIOClient;
-                    System.out.println("client connected " + _socketIOClient);
-                } else {
-                    System.out.println("why client connected? " + _socketIOClient);
-                    //TODO
-                }
-            }
-        });
-        /*
-        server.addEventListener("newEvent", String.class, new DataListener<String>() {
-            @Override
-            public void onData(SocketIOClient client, String data, AckRequest ackRequest) throws JSONException {
-                JSONObject jdata = null;
-                jdata = new JSONObject(data);
-                System.out.println("new event received " + jdata.get("caption"));
-            }
-        });
-        server.addEventListener("message", String.class, new DataListener<String>() {
-            @Override
-            public void onData(SocketIOClient client, String data, AckRequest ackRequest) {
-                System.out.println("message received " + data);
-            }
-        });
-        */
-        server.addEventListener("requestEvents", String.class, new DataListener<String>() {
-            @Override
-            public void onData(SocketIOClient client, String data, AckRequest ackRequest) throws JSONException {
-                System.out.println("new request for events from " + client);
-                client.sendEvent("calendarEvent", eventData);
-            }
-        });
-        System.out.println("server start...");
-        server.start();
-    }
     @Before
     public void startServerThread(){
         ts = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    server();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedEncodingException e) {
+                    ServerIO.server();
+                } catch (InterruptedException | UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
+                ServerIO.server.addEventListener("requestEvents", String.class, new DataListener<String>() {
+                    @Override
+                    public void onData(SocketIOClient client, String data, AckRequest ackRequest) throws JSONException {
+                        System.out.println("new request for events from " + client);
+                        client.sendEvent("calendarEvent", eventData);
+                    }
+                });
             }
         }){
             @Override
             public void interrupt() {
                 System.out.println("server stop...");
-                server.stop();
+                ServerIO.server.stop();
             }
         };
         ts.start();
@@ -143,9 +107,8 @@ public class DatePickerTest extends GuiTest {
         TimeUnit.SECONDS.sleep(2);
         type(KeyCode.F4);
         type(KeyCode.PAGE_UP);
-        TimeUnit.SECONDS.sleep(1);
         type(KeyCode.F10);
-        server.getBroadcastOperations().sendEvent("calendarEvent", eventData2);
+        ServerIO.server.getBroadcastOperations().sendEvent("calendarEvent", eventData2);
         TimeUnit.SECONDS.sleep(1);
         type(KeyCode.F10);
         TimeUnit.SECONDS.sleep(1);
@@ -156,6 +119,6 @@ public class DatePickerTest extends GuiTest {
         type(KeyCode.UP);
         TimeUnit.SECONDS.sleep(1);
         type(KeyCode.DOWN);
-        TimeUnit.SECONDS.sleep(10);
+        TimeUnit.SECONDS.sleep(20);
     }
 }

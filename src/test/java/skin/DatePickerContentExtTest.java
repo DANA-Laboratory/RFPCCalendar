@@ -44,9 +44,5 @@ public class DatePickerContentExtTest extends ApplicationTest {
         fri.setTime(1472235021041L);
         Date tue = new Date();
         tue.setTime(1472144021041L);
-        //Rectangle rect = datePickerContentExt.getRectDuration(fri, tue);
-        //assertSame((new Rectangle()).getClass(), rect.getClass());
-        //assertNull(datePickerContentExt.getRectDuration(yearMonth.plusMonths(1).atDay(1), new Date()));
-        //assertNull(datePickerContentExt.getRectDuration(yearMonth.atDay(1), yearMonth.atDay(9)));
     }
 }

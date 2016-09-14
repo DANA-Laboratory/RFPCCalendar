@@ -2,7 +2,6 @@ package skin;
 
 
 import behavior.DateCellBehaviorExt;
-import com.ibm.icu.util.Calendar;
 import control.DateCell;
 import control.DatePicker;
 import control.DatePickerExt;
@@ -13,15 +12,10 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
-import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
 import javafx.scene.Node;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,13 +32,12 @@ import java.util.List;
 public class DatePickerContentExt extends DatePickerContent {
     private List<Node> eventNodes = null;
     private DatePickerEventsPane datePickerEventsPane;
-    private LocalDateStringConverter localDateStringConverter;
+    private LocalDateStringConverter localDateStringConverter = new LocalDateStringConverter();
     DatePickerContentExt(DatePicker datePicker) {
         super(datePicker);
         gridPane.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         datePickerEventsPane = new DatePickerEventsPane();
         datePickerEventsPane.getChildren().add(this);
-        localDateStringConverter = new LocalDateStringConverter();
         datePickerEventsPane.lastUpdateProperty.addListener(new ChangeListener<Date>() {
             @Override
             public void changed(ObservableValue<? extends Date> observable, Date oldValue, Date newValue) {
@@ -55,6 +48,18 @@ public class DatePickerContentExt extends DatePickerContent {
                         updateEventRectangles();
                     }
                 });
+            }
+        });
+        datePickerEventsPane.showEventsProperty.addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if(newValue)
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            lastFocusedEventCell.requestFocus();
+                        }
+                    });
             }
         });
     }
@@ -73,7 +78,7 @@ public class DatePickerContentExt extends DatePickerContent {
         if(((DatePickerExt)datePicker).isShowCalendarEvents()) {
             for (int i = 0; i < 6 * daysPerWeek; i++) {
                 DateCell dayCell = dayCells.get(i);
-                dayCell.getStyleClass().add("date_cell_big");
+                dayCell.getStyleClass().add("day_cell_big");
             }
             updateEventRectangles();
         }
@@ -110,54 +115,64 @@ public class DatePickerContentExt extends DatePickerContent {
             }
         }
     }
+    private EventCell lastFocusedEventCell = null;
     private void createEventCells(JSONArray calendarEvents) {
         EventCell eventCell = null;
-        Date today  = Calendar.getInstance(faLocale).getTime();
-        for (int i = 0; i<calendarEvents.length(); i++) {
+        for (int i = 0; i< calendarEvents.length(); i++) {
+            eventCell = null;
             try {
-                JSONObject calendarEvent = calendarEvents.getJSONObject(i);
-                eventCell = createEventCell(calendarEvent.getString("from"), calendarEvent.getString("to"));
-                if (eventCell != null) {
-                    eventCell.setLayoutY(eventCell.getLayoutY() + gridPane.getLayoutY());
-                    String caption = calendarEvents.getJSONObject(i).getString("caption");
-                    String trainer = calendarEvents.getJSONObject(i).getString("trainer");
-                    String location = calendarEvents.getJSONObject(i).getString("location");
-                    eventCell.setText(calendarEvents.getJSONObject(i).getString("caption"));
-                    eventCell.updateItem(today, false);
-                    eventNodes.add(eventCell);
-                } else {
-                    //TODO
-                }
-            } catch (JSONException err) {
-                err.printStackTrace();
+                eventCell = createEventCell(calendarEvents.getJSONObject(i));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            if (eventCell != null) {
+                eventCell.setLayoutY(eventCell.getLayoutY() + gridPane.getLayoutY());
+                eventNodes.add(eventCell);
+            } else {
+                //TODO
             }
         }
+        if(eventNodes.size() > 0)
+            lastFocusedEventCell = (EventCell) (eventNodes.get(0));
     }
-
-    private EventCell createEventCell(String from, String to) {
-        Date _from = localDateStringConverter.fromString(from);
-        Date _to =  localDateStringConverter.fromString(to);
+    private EventCell createEventCell(JSONObject jsonCalendarEvent) {
+        final EventHandler<MouseEvent> eventCellActionHandler = ev -> {
+            if (ev.getButton() != MouseButton.PRIMARY) {
+                return;
+            }
+            EventCell eventCell = (EventCell)ev.getSource();
+            lastFocusedEventCell = eventCell;
+            eventCell.requestFocus();
+            if(ev.getClickCount()==2){
+                selectDayCell(eventCell);
+            }
+        };
+        Date _from;
+        Date _to;
+        try {
+            _from = localDateStringConverter.fromString(jsonCalendarEvent.getString("from"));
+            _to =  localDateStringConverter.fromString(jsonCalendarEvent.getString("to"));
+        } catch (JSONException err) {
+            err.printStackTrace();
+            return null;
+        }
         DateCell cd1 = findDayCellForDate(_from);
         DateCell cd2 = findDayCellForDate(_to);
         if (cd1 == null && cd2 != null)
             cd1 = findNearestDayCellForDate(_from);
         else
-        if (cd1 != null && cd2 == null)
-            cd2 = findNearestDayCellForDate(_to);
+            if (cd1 != null && cd2 == null)
+                cd2 = findNearestDayCellForDate(_to);
         if ((cd1 != null) && (cd2 != null)) {
             Bounds bounds1 = cd1.getBoundsInParent();
             Bounds bounds2 = cd2.getBoundsInParent();
             if (bounds1.getMinY() == bounds2.getMinY()) {
-                double minX = Math.min(bounds1.getMinX(), bounds2.getMinX());
-                double minY = Math.min(bounds1.getMinY(), bounds2.getMinY());
-                double height = Math.max(bounds1.getMaxY(), bounds2.getMaxY()) - minY;
-                double width = Math.max(bounds1.getMaxX(), bounds2.getMaxX()) - minX;
-                EventCell eventCell = new EventCell(_from, _to);
-                eventCell.setPrefHeight(height);
-                eventCell.setPrefWidth(width);
-                eventCell.setLayoutX(getWidth()- minX - width);
-                eventCell.setLayoutY(minY);
+                EventCell eventCell = new EventCell(jsonCalendarEvent, bounds1, bounds2);
+                eventCell.setLayoutX(getWidth() - eventCell.getLayoutX());
+                eventCell.setOnMouseClicked(eventCellActionHandler);
                 return eventCell;
+            } else {
+                //TODO distribute event over weeks
             }
         }
         return null;
@@ -170,11 +185,12 @@ public class DatePickerContentExt extends DatePickerContent {
         return null;
     }
     public void goToEventCell(EventCell eventCell, int forward, int unit, boolean requestFocus) {
-        System.out.println("goToEventCell " + unit);
         if(requestFocus) {
             if(unit == DateCellBehaviorExt.DAILY)
                 try{
-                    eventNodes.get(eventNodes.indexOf(eventCell) + forward).requestFocus();
+                    EventCell ec = (EventCell) eventNodes.get(eventNodes.indexOf(eventCell) + forward);
+                    ec.requestFocus();
+                    lastFocusedEventCell = ec;
                 } catch (IndexOutOfBoundsException err){
 
                 }
@@ -185,13 +201,21 @@ public class DatePickerContentExt extends DatePickerContent {
                 try {
                     while (weekValue == yearMonth.setDate(ec.getItem()).getWeekValue()) {
                         ec = (EventCell) (eventNodes.get(eventNodes.indexOf(ec) + forward));
-                        System.out.println(yearMonth.setDate(ec.getItem()).getWeekValue());
                     }
                     ec.requestFocus();
+                    lastFocusedEventCell = ec;
                 } catch (IndexOutOfBoundsException err){
 
                 }
             }
         }
+    }
+    @Override
+    public void selectDayCell(DateCell dateCell) {
+        if(dateCell instanceof EventCell) {
+            System.out.println("Select Event Cell");
+            return;
+        }
+        super.selectDayCell(dateCell);
     }
 }
