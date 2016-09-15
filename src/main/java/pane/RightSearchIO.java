@@ -1,4 +1,4 @@
-package panes;
+package pane;
 
 import Net.Query;
 import Net.Socket;
@@ -24,6 +24,9 @@ public class RightSearchIO extends BorderPane {
     private final ComboIO comboIO;
     private final  VBox types;
     public EventHandler<ActionEvent> onLabelClicked;
+    public String getSelectedValue(){
+        return (String) comboIO.getSelectionModel().selectedItemProperty().getValue();
+    }
     public RightSearchIO(Query query) {
         super();
         setBorder(Main.regularBorder);

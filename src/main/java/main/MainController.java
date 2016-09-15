@@ -1,15 +1,17 @@
 package main;
 
 import Net.Query;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.layout.BorderPane;
-import panes.BottomLatest;
-import panes.LeftToDo;
-import panes.RightSearchIO;
-import panes.TopNavigation;
+import pane.BottomLatest;
+import pane.LeftToDo;
+import pane.RightSearchIO;
+import pane.TopNavigation;
 
 import java.io.IOException;
 
@@ -17,7 +19,7 @@ import java.io.IOException;
  * Created by Afzalan on 9/14/2016.
  */
 public class MainController {
-    @FXML  public BorderPane mainPane;
+    @FXML  private BorderPane mainPane;
     private static LeftToDo leftToDo;
     private static TopNavigation nav;
 
@@ -30,13 +32,23 @@ public class MainController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        RightSearchIO rightSearchIO = new RightSearchIO(Query.FindAll);
+        RightSearchIO rightSearchIO = new RightSearchIO(new Query(Query.FindAll, null));
         rightSearchIO.onLabelClicked = new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                mainPane.setCenter(nav.getView(((Hyperlink)event.getSource()).getText()));
+                nav.setNewLocation(
+                        new Query(((Hyperlink)event.getSource()).getText(), rightSearchIO.getSelectedValue())
+                        ,((Hyperlink)event.getSource()).getText()
+                );
+                mainPane.setCenter(nav.getCurrentView());
             }
         };
+        nav.currentLocation.addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                mainPane.setCenter(nav.getCurrentView());
+            }
+        });
         leftToDo = new LeftToDo();
         BottomLatest bottomLatest = new BottomLatest();
         mainPane.setLeft(rightSearchIO);

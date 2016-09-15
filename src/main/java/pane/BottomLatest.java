@@ -1,5 +1,9 @@
-package panes;
+package pane;
 
+import Net.Query;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.css.SimpleStyleableObjectProperty;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
 

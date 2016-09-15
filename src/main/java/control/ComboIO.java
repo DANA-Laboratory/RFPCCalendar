@@ -22,8 +22,8 @@ public class ComboIO extends ComboBox {
     private String oldText = "";
     private boolean isInList = false;
     public ComboIO() {
-        this.query = Query.FindAll;
-        new ComboIO(Query.FindAll);
+        query = new Query(Query.FindAll, null);
+        new ComboIO(query);
     }
     public ComboIO(Query query) {
         super();

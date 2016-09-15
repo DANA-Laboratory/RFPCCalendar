@@ -1,8 +1,7 @@
-package panes;
+package pane;
 
 import com.ibm.icu.text.DateFormat;
 import com.ibm.icu.util.ULocale;
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;

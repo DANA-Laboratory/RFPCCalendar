@@ -15,7 +15,7 @@ public class ComboIOTest extends GuiTest {
     private ComboIO root = null;
     @Override
     protected Parent getRootNode() {
-        root = new ComboIO(Query.FindAll);
+        root = new ComboIO();
         return root;
     }
     @Before

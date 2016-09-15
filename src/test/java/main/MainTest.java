@@ -10,7 +10,7 @@ import static control.ServerIO.startComboIDServer;
 /**
  * Created by Afzalan on 9/11/2016.
  */
-public class MasterPaneTest extends ApplicationTest {
+public class MainTest extends ApplicationTest {
     private Application MasterPane = new Main();
     @Test
     public void testCreateAncorPane() throws Exception {
