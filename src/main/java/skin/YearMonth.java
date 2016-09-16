@@ -5,6 +5,7 @@ import com.ibm.icu.util.Calendar;
 import com.ibm.icu.util.ULocale;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by AliReza on 8/18/2016.
@@ -116,4 +117,17 @@ public class YearMonth {
     public String getMonth(){
         return faMonthFormatter.format(calendar);
     }
+
+    /**
+     * Get a diff between two dates
+     * @param date1 the oldest date
+     * @param date2 the newest date
+     * @param timeUnit the unit in which you want the diff
+     * @return the diff value, in the provided unit
+     */
+    public static long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
+        long diffInMillies = date2.getTime() - date1.getTime();
+        return timeUnit.convert(diffInMillies,TimeUnit.MILLISECONDS);
+    }
+
 }
