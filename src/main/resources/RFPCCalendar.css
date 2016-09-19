@@ -56,3 +56,15 @@
     -fx-font-family: FontAwesome;
     -fx-font-size: 14;
 }
+.week_events {
+    -fx-font-family: "b titr";
+    -fx-alignment: center;
+    -fx-border-color: black;
+    -fx-border-radius: 2;
+    -fx-border-width: 2;
+    -fx-border-insets: 1 0 0 1;
+}
+.week_events_line {
+    -fx-stroke: blue;
+    -fx-stroke-width: 2;
+}

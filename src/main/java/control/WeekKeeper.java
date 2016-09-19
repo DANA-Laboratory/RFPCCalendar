@@ -4,12 +4,15 @@ import com.ibm.icu.text.DateFormat;
 import com.ibm.icu.util.*;
 import com.ibm.icu.util.Calendar;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import main.Main;
 import org.json.JSONArray;
@@ -25,6 +28,12 @@ import java.util.concurrent.TimeUnit;
  * Created by AliReza on 9/15/2016.
  */
 public class WeekKeeper extends Pane {
+    public SimpleDoubleProperty yUnitProperty = new SimpleDoubleProperty(50) {
+        @Override public double get() {
+            return Math.min(super.get(),(getHeight() - (sortedRowNames.size()-1)* yMarginProperty.get())/sortedRowNames.size());
+        }
+    };
+    public SimpleDoubleProperty yMarginProperty = new SimpleDoubleProperty(5);
     public static String fromDateString;
     public static String toDateString;
     public static String fromHmString;
@@ -48,32 +57,64 @@ public class WeekKeeper extends Pane {
     private SortedSet<String> sortedRowNames = new TreeSet<>();
     private ArrayList<Rectangle> rects = new ArrayList<Rectangle>();
     private ArrayList<Label> labels = new ArrayList<Label>();
+    private ArrayList<Line> lines = new ArrayList<Line>();
 
     private double minForDay = 0;
     WeekKeeper(int year, int weekNumber) {
         this(calcWeekStart(year, weekNumber), calcWeekEnd(year, weekNumber));
     }
     WeekKeeper(Date d1, Date d2) {
+        getStylesheets().add(getClass().getResource("../RFPCCalendar.css").toExternalForm());
         setDateAxis(d1, d2);
         minForDay = YearMonth.getDateDiff(fromDate, toDate, TimeUnit.MINUTES);
-        minForDay -= (int)(minForDay/60*24);
+        minForDay -= (60*24)*((int)(minForDay/(60*24)));
         toDateString = faFormatterFull.format(toDate);
         toHmString = faFormatterHm.format(toDate);
         fromDateString = faFormatterFull.format(fromDate);
         fromHmString = faFormatterHm.format(fromDate);
+        yUnitProperty.addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                if(newValue != null && yAxisProperty.get() != null && dataProperty.get() != null)
+                    try {
+                        updateLayout();
+                        updateSize();
+                        updateLines(null);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+            }
+        });
+        yMarginProperty.addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                if(newValue != null && yAxisProperty.get() != null && dataProperty.get() != null)
+                    try {
+                        updateLayout();
+                        updateLines(null);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+            }
+        });
         dataProperty.addListener(new ChangeListener<JSONArray>() {
             @Override
             public void changed(ObservableValue<? extends JSONArray> observable, JSONArray oldValue, JSONArray newValue) {
                 if(newValue != null && yAxisProperty.get() != null)
                     try {
+                        ArrayList<Line> _lines = updateSortedRowNames();
                         createLabels();
                         updateSize();
-                        updateSortedRowNames();
                         updateLayout();
+                        updateLines(_lines);
                         Platform.runLater(new Runnable() {
                             @Override
                             public void run() {
-                                getChildren().setAll(labels);
+                                getChildren().clear();
+                                getChildren().addAll(labels);
+                                lines.clear();
+                                lines.addAll(_lines);
+                                getChildren().addAll(lines);
                             }
                         });
                     } catch (JSONException e) {
@@ -84,15 +125,27 @@ public class WeekKeeper extends Pane {
         widthProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if(newValue != null && dataProperty.get() != null)
-                    updateSize();
+                if(newValue != null && yAxisProperty.get() != null && dataProperty.get() != null)
+                    try {
+                        updateLayout();
+                        updateSize();
+                        updateLines(null);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
             }
         });
         heightProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if(newValue != null && dataProperty.get() != null)
-                    updateSize();
+                if(newValue != null && yAxisProperty.get() != null && dataProperty.get() != null)
+                    try {
+                        updateLayout();
+                        updateSize();
+                        updateLines(null);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
             }
         });
         yAxisProperty.addListener(new ChangeListener<String>() {
@@ -100,8 +153,19 @@ public class WeekKeeper extends Pane {
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if(newValue != null && dataProperty.get() != null)
                     try {
-                        updateSortedRowNames();
+                        ArrayList<Line> _lines = updateSortedRowNames();
                         updateLayout();
+                        updateLines(_lines);
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                getChildren().removeAll(lines);
+                                lines.clear();
+                                lines.addAll(_lines);
+                                getChildren().addAll(lines);
+                            }
+                        });
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -149,31 +213,47 @@ public class WeekKeeper extends Pane {
             //TODO
         }
     };
-    private static final double yUnit = 50;
     private void updateLayout() throws JSONException {
-        long columnsCount = YearMonth.getDateDiff(fromDate, toDate, TimeUnit.DAYS);
+        long columnsCount = 1 + YearMonth.getDateDiff(fromDate, toDate, TimeUnit.DAYS);
         double xUnit = getWidth()/columnsCount;
         for (int i=0; i < labels.size(); i++) {
             //TODO
             JSONObject jData = dataProperty.get().getJSONObject(i);
-            (labels.get(i)).setLayoutY(yUnit * (rects.get(i).getLayoutY() + indexOf(jData.getString(yAxisProperty.get()))));
+            (labels.get(i)).setLayoutY(yUnitProperty.get() * (rects.get(i).getLayoutY() + indexOf(jData.getString(yAxisProperty.get()))) + indexOf(jData.getString(yAxisProperty.get())) * yMarginProperty.get());
             (labels.get(i)).setLayoutX(rects.get(i).getLayoutX() * xUnit);
         }
     }
     private void updateSize() {
-        long columnsCount = YearMonth.getDateDiff(fromDate, toDate, TimeUnit.DAYS);
+        long columnsCount =  1+YearMonth.getDateDiff(fromDate, toDate, TimeUnit.DAYS);
         double xUnit = getWidth()/columnsCount;
         for (int i=0; i < labels.size(); i++) {
             (labels.get(i)).setPrefWidth(rects.get(i).getWidth() * xUnit);
-            (labels.get(i)).setPrefHeight(rects.get(i).getHeight() * yUnit);
+            (labels.get(i)).setPrefHeight(rects.get(i).getHeight() * yUnitProperty.get());
         }
     }
-    private void updateSortedRowNames() throws JSONException {
+    private void updateLines(ArrayList<Line> _lines) {
+        if(_lines == null)
+            _lines = lines;
+        for (int i=0; i < _lines.size(); i++) {
+            _lines.get(i).setStartX(0.0);
+            _lines.get(i).setEndX(getWidth());
+            _lines.get(i).setStartY((i+1) * (yUnitProperty.get() + yMarginProperty.get()) -  yMarginProperty.get() / 2.0);
+            _lines.get(i).setEndY(_lines.get(i).getStartY());
+        };
+    }
+    private ArrayList<Line> updateSortedRowNames() throws JSONException {
         sortedRowNames.clear();
         for (int i=0; i<dataProperty.get().length(); i++) {
             JSONObject jData = dataProperty.get().getJSONObject(i);
             sortedRowNames.add(jData.getString(yAxisProperty.get()));
         }
+        ArrayList<Line> _lines = new ArrayList<Line>();
+        for (int i=0; i<sortedRowNames.size() - 1; i++) {
+            Line line = new Line();
+            line.getStyleClass().add("week_events_line");
+            _lines.add(line);
+        };
+        return _lines;
     }
     private int indexOf(final String rowName) {
         Iterator<String> it = sortedRowNames.iterator();
@@ -196,8 +276,8 @@ public class WeekKeeper extends Pane {
             d1.setTime(jEvent.getLong("from"));
             d2.setTime(jEvent.getLong("to"));
             rects.add(createRect(d1, d2));
-            Label label = new Label("کلاس آزمایشی");
-            label.setBorder(Main.regularBorder);
+            Label label = new Label(dataProperty.get().getJSONObject(i).getString("caption"));
+            label.getStyleClass().add("week_events");
             labels.add(label);
         }
     }
@@ -209,10 +289,12 @@ public class WeekKeeper extends Pane {
         double minLength = YearMonth.getDateDiff(from, to, TimeUnit.MINUTES);
         double dayLength = (int)minLength/60/24;
         minLength -= dayLength*60*24;
-        rect.setHeight(minLength/60/minForDay);
+        if(minLength>0)
+            dayLength++;
+        rect.setHeight(minLength/minForDay);
         rect.setWidth(dayLength);
         rect.setLayoutX(dayToStart);
-        rect.setLayoutY(minToStart/60/minForDay);
+        rect.setLayoutY(minToStart/minForDay);
         return  rect;
     }
 }
