@@ -7,7 +7,6 @@
     -fx-alignment: center-left;
     -fx-font-family: tahoma;
     -fx-font-size: 12;
-    -fx-font-weight: regular;
 }
 .event-box:hover  {
     -fx-background-color: lightsteelblue;
@@ -58,10 +57,11 @@
 }
 .week_events {
     -fx-font-family: "b titr";
+    -fx-font-size: 12;
     -fx-alignment: center;
     -fx-border-color: black;
     -fx-border-radius: 2;
-    -fx-border-width: 2;
+    -fx-border-width: 4;
     -fx-border-insets: 1 0 0 1;
 }
 .week_events_line {
