@@ -1,25 +1,26 @@
 package control;
 
-import com.ibm.icu.text.DateFormat;
 import com.ibm.icu.util.Calendar;
 import com.ibm.icu.util.ULocale;
-import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Line;
 import org.json.JSONArray;
 import org.json.JSONException;
+import skin.YearMonth;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Afzalan on 9/19/2016.
  */
-public class WeekSchedule extends VBox{
+public class GanttChart extends BorderPane{
 
     //properties
     public SimpleObjectProperty<JSONArray> dataProperty = new SimpleObjectProperty<JSONArray>(null) {
@@ -34,7 +35,9 @@ public class WeekSchedule extends VBox{
     };
     public SimpleObjectProperty<SortedSet<String>> sortedRowNamesProperty = new SimpleObjectProperty<SortedSet<String>>(null);
     public SimpleObjectProperty<ArrayList<CalendarEvent>> calendarEventsProperty = new SimpleObjectProperty<ArrayList<CalendarEvent>>();
-
+    //plot area
+    public SimpleDoubleProperty yUnitProperty = null;
+    public SimpleDoubleProperty yMarginProperty = null;
     //private WeekScheduleHeader header;
     private final static ULocale faLocale = new ULocale("fa_IR@calendar=persian");
     private static com.ibm.icu.util.Calendar faCalendar = com.ibm.icu.util.Calendar.getInstance(faLocale);
@@ -44,13 +47,24 @@ public class WeekSchedule extends VBox{
     private static final int startMinute = 30;
     private static final int endMinute = 0;
 
-    WeekSchedule(int year, int weekNumber) {
+    private double minutesOfDay = 0;
+    public double getMinutesOfDay (){
+        return minutesOfDay;
+    }
+    private long columnsCount = 0;
+    public long getColumnsCount() {
+        return columnsCount;
+    }
+    GanttChart(int year, int weekNumber) {
         this(calcWeekStart(year, weekNumber), calcWeekEnd(year, weekNumber));
     }
-    WeekSchedule(Date d1, Date d2) {
+    GanttChart(Date d1, Date d2) {
         super();
         setDateAxis(d1, d2);
-        //header = new WeekScheduleHeader();
+        columnsCount = 1 + YearMonth.getDateDiff(fromDate, toDate, TimeUnit.DAYS);
+        minutesOfDay = YearMonth.getDateDiff(fromDate, toDate, TimeUnit.MINUTES);
+        minutesOfDay -= (60*24)*((int)(minutesOfDay/(60*24)));
+
         dataProperty.addListener(new ChangeListener<JSONArray>() {
             @Override
             public void changed(ObservableValue<? extends JSONArray> observable, JSONArray oldValue, JSONArray newValue) {
@@ -116,7 +130,6 @@ public class WeekSchedule extends VBox{
                 i++;
         return -1;
     }
-
     private void setDateAxis(Date d1, Date d2){
         if (d1.getTime() < d2.getTime()) {
             fromDate = d1;
@@ -126,7 +139,6 @@ public class WeekSchedule extends VBox{
             toDate = d1;
         }
     }
-
     private static Date calcWeekStart(int year, int week){
         faCalendar.set(Calendar.YEAR, year);
         faCalendar.set(Calendar.WEEK_OF_YEAR, week);

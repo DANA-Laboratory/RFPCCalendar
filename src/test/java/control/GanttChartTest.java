@@ -4,8 +4,6 @@ import com.ibm.icu.util.Calendar;
 import com.ibm.icu.util.ULocale;
 import javafx.geometry.NodeOrientation;
 import javafx.scene.Parent;
-import javafx.scene.layout.Pane;
-import main.Main;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -17,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by AliReza on 9/16/2016.
  */
-public class WeekScheduleDetailTest extends GuiTest {
+public class GanttChartTest extends GuiTest {
     private final static ULocale faLocale = new ULocale("fa_IR@calendar=persian");
     private static Calendar faCalendar = Calendar.getInstance(faLocale);
     private JSONObject createEvent(String caption, String location, String group, String trainer, int start, int end, int startHour, int startMin, int endHour, int endMin) throws Exception {
@@ -45,12 +43,12 @@ public class WeekScheduleDetailTest extends GuiTest {
     @Before
     public void before() throws Exception{
         arr.put(createEvent("برنامه نویسی جاوا", "204", "EL1", "طباطبایی", 0 , 1, 8, 30, 10, 00));
-        arr.put(createEvent("ACCSESS 2010", "204", "EL1", "نبی زاده", 1 , 3, 10, 00, 13, 00));
-        arr.put(createEvent("آزمایشگاه مکانیک", "204", "EL1", "افضلان", 0 , 4, 13, 00, 16, 00));
+        arr.put(createEvent("ACCSESS 2010", "204", "EL1", "نبی زاده", 2 , 3, 10, 00, 13, 00));
+        arr.put(createEvent("آزمایشگاه مکانیک", "204", "EL1", "افضلان", 1 , 4, 13, 00, 16, 00));
         arr.put(createEvent("Word & Windows", "204", "EL1", "حق گو", 5 , 5, 8, 30, 14, 00));
         arr.put(createEvent("SQL 2000", "201", "EL1", "نادری", 6 , 6, 14, 00, 16, 00));
 
-        arr.put(createEvent("برنامه نویسی جاوا", "201", "EL2", "طباطبایی", 0 , 5, 8, 30, 10, 00));
+        arr.put(createEvent("برنامه نویسی جاوا", "201", "EL2", "طباطبایی", 1 , 5, 8, 30, 10, 00));
         arr.put(createEvent("SQL 2000", "204", "EL2", "نادری", 6 , 6, 8, 30, 10, 00));
 
         arr.put(createEvent("برنامه نویسی جاوا", "202", "EL3", "طباطبایی", 0 , 3, 8, 30, 9, 30));
@@ -60,36 +58,44 @@ public class WeekScheduleDetailTest extends GuiTest {
     }
     @Test
     public void testHideDay() throws InterruptedException {
-        weekSchedule.yAxisProperty.set("trainer");
-        weekSchedule.dataProperty.set(arr);
-        weekScheduleDetail = new WeekScheduleDetail(weekSchedule);
-        TimeUnit.SECONDS.sleep(4);
-        weekSchedule.yAxisProperty.set("location");
-        TimeUnit.SECONDS.sleep(4);
-        weekSchedule.yAxisProperty.set("group");
+        ganttChart.yAxisProperty.set("trainer");
+        ganttChart.dataProperty.set(arr);
+        ganttChartPlot = new GanttChartPlot(ganttChart);
+        TimeUnit.MILLISECONDS.sleep(2000);
+        ganttChartRight = new GanttChartRight(ganttChart);
+        TimeUnit.MILLISECONDS.sleep(2000);
+        ganttChartTop = new GanttChartTop(ganttChart);
+        //ganttChart.setVisible(true);
         TimeUnit.SECONDS.sleep(2);
-        weekScheduleDetail.yMarginProperty.set(10);
+        ganttChart.yAxisProperty.set("location");
         TimeUnit.SECONDS.sleep(2);
-        weekScheduleDetail.yUnitProperty.set(140);
+        ganttChart.yAxisProperty.set("group");
         TimeUnit.SECONDS.sleep(2);
-        weekScheduleDetail.yUnitProperty.set(160);
+        ganttChart.yMarginProperty.set(20);
         TimeUnit.SECONDS.sleep(2);
-        weekScheduleDetail.yUnitProperty.set(weekScheduleDetail.computeMinYUnit());
+        ganttChart.yMarginProperty.set(10);
+        TimeUnit.SECONDS.sleep(2);
+        ganttChart.yUnitProperty.set(140);
+        TimeUnit.SECONDS.sleep(2);
+        ganttChart.yUnitProperty.set(160);
+        TimeUnit.SECONDS.sleep(2);
+        ganttChart.yUnitProperty.set(ganttChartPlot.computeMinYUnit());
         TimeUnit.SECONDS.sleep(8);
-        weekScheduleDetail.yUnitProperty.set(-1);
+        ganttChart.yUnitProperty.set(-1);
         TimeUnit.SECONDS.sleep(8);
     }
-
     @Test
     public void testUnHideDay() throws Exception {
-
     }
-    WeekSchedule weekSchedule;
-    WeekScheduleDetail weekScheduleDetail;
+    GanttChart ganttChart;
+    GanttChartTop ganttChartTop;
+    GanttChartRight ganttChartRight;
+    GanttChartPlot ganttChartPlot;
     @Override
     protected Parent getRootNode() {
-        weekSchedule = new WeekSchedule(1395, 2);
-        weekSchedule.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
-        return weekSchedule;
+        ganttChart = new GanttChart(1395, 2);
+        ganttChart.setPrefHeight(800);
+        ganttChart.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+        return ganttChart;
     }
 }
