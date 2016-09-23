@@ -1,6 +1,5 @@
 package control;
 
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
@@ -61,17 +60,11 @@ public class GanttChartRight extends VBox {
             e.setPrefHeight(yUnit);
         });
     }
-    private void show() {
+    public void show() {
         createRowCaptions();
         updateSize();
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                getChildren().setAll(rowCaptions);
-                if(ganttChart.getChildren().indexOf(GanttChartRight.this)<0)
-                    ganttChart.setLeft(GanttChartRight.this);
-            }
-        });
-
+        getChildren().setAll(rowCaptions);
+        if(ganttChart.getChildren().indexOf(GanttChartRight.this)<0)
+            ganttChart.setLeft(GanttChartRight.this);
     }
 }

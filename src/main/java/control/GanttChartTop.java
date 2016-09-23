@@ -3,7 +3,6 @@ package control;
 import com.ibm.icu.text.DateFormat;
 import com.ibm.icu.util.Calendar;
 import com.ibm.icu.util.ULocale;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
@@ -62,14 +61,9 @@ public class GanttChartTop extends HBox {
     private void show() {
         createColumnCaptions();
         updateSize();
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                getChildren().setAll(columnCaptions);
-                if(ganttChart.getChildren().indexOf(GanttChartTop.this)<0)
-                    ganttChart.setTop(GanttChartTop.this);
-            }
-        });
+        getChildren().setAll(columnCaptions);
+        if(ganttChart.getChildren().indexOf(GanttChartTop.this)<0)
+            ganttChart.setTop(GanttChartTop.this);
     }
     private void createColumnCaptions() {
         columnCaptions.clear();

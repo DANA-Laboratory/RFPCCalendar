@@ -2,14 +2,15 @@ package control;
 
 import com.sun.javafx.scene.text.TextLayout;
 import com.sun.javafx.tk.Toolkit;
-import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -121,16 +122,11 @@ public class GanttChartPlot extends Pane {
         updateSize();
         updateLayout();
         updateLines();
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                getChildren().clear();
-                getChildren().addAll(labels);
-                getChildren().addAll(lines);
-                if(ganttChart.getChildren().indexOf(GanttChartPlot.this)<0)
-                    ganttChart.setCenter(GanttChartPlot.this);
-            }
-        });
+        getChildren().clear();
+        getChildren().addAll(labels);
+        getChildren().addAll(lines);
+        if(ganttChart.getChildren().indexOf(GanttChartPlot.this)<0)
+            ganttChart.setCenter(GanttChartPlot.this);
     }
     private void updateLayout() {
         double xUnit = getWidth()/ganttChart.getColumnsCount();
@@ -149,7 +145,6 @@ public class GanttChartPlot extends Pane {
             Scene scene = new Scene(root);
             root.getStylesheets().add(getClass().getResource("../GanttChart.css").toExternalForm());
             Label label = new Label();
-            computedMinYUnit = 0.0;
             for (int i = 0; i < labels.size(); i++) {
                 label.setFont(labels.get(i).getFont());
                 label.setBorder(labels.get(i).getBorder());
@@ -200,7 +195,8 @@ public class GanttChartPlot extends Pane {
             d1.setTime(jEvent.from);
             d2.setTime(jEvent.to);
             rects.add(createRect(d1, d2));
-            Label label = new Label(ganttChart.calendarEventsProperty.get().get(i).caption);
+            Label label = new EventLabel(ganttChart.calendarEventsProperty.get().get(i));
+
             label.getStyleClass().add("events");
             labels.add(label);
         }

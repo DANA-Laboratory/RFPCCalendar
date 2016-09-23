@@ -2,6 +2,7 @@ package control;
 
 import com.ibm.icu.util.Calendar;
 import com.ibm.icu.util.ULocale;
+import javafx.application.Platform;
 import javafx.geometry.NodeOrientation;
 import javafx.scene.Parent;
 import org.json.JSONArray;
@@ -40,8 +41,7 @@ public class GanttChartTest extends GuiTest {
     }
 
     JSONArray arr = new JSONArray();
-    @Before
-    public void before() throws Exception{
+    private void createData() throws Exception{
         arr.put(createEvent("برنامه نویسی جاوا", "204", "EL1", "طباطبایی", 0 , 1, 8, 30, 10, 00));
         arr.put(createEvent("ACCSESS 2010", "204", "EL1", "نبی زاده", 2 , 3, 10, 00, 13, 00));
         arr.put(createEvent("آزمایشگاه مکانیک", "204", "EL1", "افضلان", 1 , 4, 13, 00, 16, 00));
@@ -54,35 +54,76 @@ public class GanttChartTest extends GuiTest {
         arr.put(createEvent("برنامه نویسی جاوا", "202", "EL3", "طباطبایی", 0 , 3, 8, 30, 9, 30));
         arr.put(createEvent("ACCSESS 2010", "202", "EL3", "نبی زاده", 3 , 5, 9, 30, 10, 30));
         arr.put(createEvent("آزمایشگاه مکانیک","202", "EL3", "افضلان", 5 , 6, 10, 30, 11, 30));
-
+    }
+    @Before
+    public void before() throws Exception{
     }
     @Test
     public void testHideDay() throws InterruptedException {
-        ganttChart.yAxisProperty.set("trainer");
-        ganttChart.dataProperty.set(arr);
-        ganttChartPlot = new GanttChartPlot(ganttChart);
-        TimeUnit.MILLISECONDS.sleep(2000);
-        ganttChartRight = new GanttChartRight(ganttChart);
-        TimeUnit.MILLISECONDS.sleep(2000);
-        ganttChartTop = new GanttChartTop(ganttChart);
-        //ganttChart.setVisible(true);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                ganttChartRight = new GanttChartRight(ganttChart);
+                ganttChartTop = new GanttChartTop(ganttChart);
+            }
+        });
+        TimeUnit.SECONDS.sleep(6);
+        Platform.runLater(new Runnable() {
+                              @Override
+                              public void run() {
+                                  ganttChart.yAxisProperty.set("trainer");
+                              }
+                          });
+        TimeUnit.SECONDS.sleep(6);
+        Platform.runLater(new Runnable() {
+                              @Override
+                              public void run() {
+                                  ganttChart.yAxisProperty.set("group");
+                              }
+                          });
         TimeUnit.SECONDS.sleep(2);
-        ganttChart.yAxisProperty.set("location");
+        Platform.runLater(new Runnable() {
+                              @Override
+                              public void run() {
+                                  ganttChart.yMarginProperty.set(20);
+                              }
+                          });
         TimeUnit.SECONDS.sleep(2);
-        ganttChart.yAxisProperty.set("group");
+        Platform.runLater(new Runnable() {
+                              @Override
+                              public void run() {
+                                  ganttChart.yMarginProperty.set(10);
+                              }
+                          });
         TimeUnit.SECONDS.sleep(2);
-        ganttChart.yMarginProperty.set(20);
+        Platform.runLater(new Runnable() {
+                              @Override
+                              public void run() {
+                                  ganttChart.yUnitProperty.set(140);
+                              }
+                          });
         TimeUnit.SECONDS.sleep(2);
-        ganttChart.yMarginProperty.set(10);
+        Platform.runLater(new Runnable() {
+                              @Override
+                              public void run() {
+                                  ganttChart.yUnitProperty.set(160);
+                              }
+                          });
         TimeUnit.SECONDS.sleep(2);
-        ganttChart.yUnitProperty.set(140);
+        Platform.runLater(new Runnable() {
+                              @Override
+                              public void run() {
+                                  ganttChart.yUnitProperty.set(ganttChartPlot.computeMinYUnit());
+                              }
+                          });
         TimeUnit.SECONDS.sleep(2);
-        ganttChart.yUnitProperty.set(160);
+        Platform.runLater(new Runnable() {
+                              @Override
+                              public void run() {
+                                  ganttChart.yUnitProperty.set(-1);
+                              }
+                          });
         TimeUnit.SECONDS.sleep(2);
-        ganttChart.yUnitProperty.set(ganttChartPlot.computeMinYUnit());
-        TimeUnit.SECONDS.sleep(8);
-        ganttChart.yUnitProperty.set(-1);
-        TimeUnit.SECONDS.sleep(8);
     }
     @Test
     public void testUnHideDay() throws Exception {
@@ -94,8 +135,17 @@ public class GanttChartTest extends GuiTest {
     @Override
     protected Parent getRootNode() {
         ganttChart = new GanttChart(1395, 2);
-        ganttChart.setPrefHeight(800);
+        ganttChart.setPrefSize(900, 800);
         ganttChart.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+        ganttChart.yAxisProperty.set("location");
+        try {
+            createData();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        ganttChart.dataProperty.set(arr);
+        ganttChartPlot = new GanttChartPlot(ganttChart);
         return ganttChart;
     }
 }

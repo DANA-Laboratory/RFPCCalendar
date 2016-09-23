@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by AliReza on 9/19/2016.
@@ -24,11 +25,14 @@ class CalendarEvent {
         event.inner = obj;
         return event;
     }
-    private String getString(String key) throws JSONException {
+    public String getString(String key) throws JSONException {
         return inner.getString(key);
     }
     void setKey(String key) throws JSONException {
         value = inner.getString(key);
+    }
+    public Iterator<String> getKeys() {
+        return inner.sortedKeys();
     }
     long from;
     long to;
