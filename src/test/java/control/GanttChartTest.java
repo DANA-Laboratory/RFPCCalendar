@@ -65,6 +65,8 @@ public class GanttChartTest extends GuiTest {
             public void run() {
                 ganttChartRight = new GanttChartRight(ganttChart);
                 ganttChartTop = new GanttChartTop(ganttChart);
+                JSONGrid = EventLabel.getEventGrid();
+                ganttChart.setBottom(JSONGrid);
             }
         });
         TimeUnit.SECONDS.sleep(6);
@@ -132,6 +134,7 @@ public class GanttChartTest extends GuiTest {
     GanttChartTop ganttChartTop;
     GanttChartRight ganttChartRight;
     GanttChartPlot ganttChartPlot;
+    JSONGrid JSONGrid;
     @Override
     protected Parent getRootNode() {
         ganttChart = new GanttChart(1395, 2);

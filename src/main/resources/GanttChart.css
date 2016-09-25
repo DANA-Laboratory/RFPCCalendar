@@ -1,3 +1,6 @@
+@font-face {
+    src: url('font-awesome-4.6.3/fonts/fontawesome-webfont.ttf');
+}
 .events {
     -fx-font-family: "b yekan";
     -fx-font-size: 12;
@@ -20,4 +23,8 @@
     -fx-font-family: "b yekan";
     -fx-font-size: 14;
     -fx-font-weight: bold;
+}
+.icon {
+    -fx-font-family: FontAwesome;
+    -fx-font-size: 14;
 }
