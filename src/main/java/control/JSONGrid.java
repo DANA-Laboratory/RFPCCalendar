@@ -6,8 +6,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.Font;
 import org.json.JSONException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 
 /**
@@ -17,17 +20,23 @@ class JSONGrid extends GridPane {
     Button updateBtn;
     Button deleteBtn;
     Button addNewBtn;
-    JSONGrid(){
+    JSONGrid() {
         super();
+        Font f = null;
+        try {
+            f = Font.loadFont((InputStream)(getClass().getResource("../font-awesome-4.6.3/fonts/fontawesome-webfont.ttf").getContent()), 18);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         getStylesheets().add(getClass().getResource("../GanttChart.css").toExternalForm());
         updateBtn = new Button("\uf0c7");
+        updateBtn.setFont(f);
         updateBtn.onActionProperty().setValue(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 getChildren().clear();
             }
         });
-        updateBtn.getStyleClass().add("icon");
         deleteBtn = new Button("\uf068");
         deleteBtn.onActionProperty().setValue(new EventHandler<ActionEvent>() {
             @Override
@@ -36,7 +45,7 @@ class JSONGrid extends GridPane {
                 getChildren().clear();
             }
         });
-        deleteBtn.getStyleClass().add("icon");
+        deleteBtn.setFont(f);
         addNewBtn = new Button("\uf067");
         addNewBtn.onActionProperty().setValue(new EventHandler<ActionEvent>() {
             @Override
@@ -47,7 +56,7 @@ class JSONGrid extends GridPane {
                 });
             }
         });
-        addNewBtn.getStyleClass().add("icon");
+        addNewBtn.setFont(f);
         GridPane.setColumnIndex(updateBtn, 2);
         GridPane.setColumnIndex(deleteBtn, 2);
         GridPane.setColumnIndex(addNewBtn, 2);
